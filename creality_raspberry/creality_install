@@ -8,12 +8,17 @@ if [ ! -f "$GenerateIdentifier" ]; then
         exit 0
 fi
 sudo "$GenerateIdentifier"
+#3D printer services
 sudo echo "[Unit]
 Description= creality printer server
 After=network.target
 
 [Service]
+Restart=on-failure
+RestartSec=1
 Type=simple
+#Type=forking
+PIDFile=/run/printer.pid
 ExecStart=$baseDirForScriptSelf/creality_start 
 ExecStop=$baseDirForScriptSelf/creality_stop
 
@@ -21,6 +26,29 @@ ExecStop=$baseDirForScriptSelf/creality_stop
 WantedBy=multi-user.target" > $baseDirForScriptSelf/creality_printer.service
 sudo cp "$baseDirForScriptSelf"/creality_printer.service /usr/lib/systemd/system 
 
+# Video Monitoring services
+sudo echo "[Unit]
+Description= creality printer server
+After=network.target
+
+[Service]
+Restart=on-failure
+RestartSec=1
+Type=simple
+#Type=forking
+PIDFile=/run/video.pid
+ExecStart=$baseDirForScriptSelf/video_start 
+ExecStop=$baseDirForScriptSelf/video_stop
+
+[Install]
+WantedBy=multi-user.target" > $baseDirForScriptSelf/creality_video_monitoring.service
+sudo cp "$baseDirForScriptSelf"/creality_video_monitoring.service /usr/lib/systemd/system 
+
 sudo systemctl enable creality_printer.service
 sudo systemctl stop creality_printer.service
 sudo systemctl start creality_printer.service
+
+
+sudo systemctl enable creality_video_monitoring.service
+sudo systemctl stop creality_video_monitoring.service
+sudo systemctl start creality_video_monitoring.service
